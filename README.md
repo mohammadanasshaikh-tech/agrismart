@@ -216,14 +216,8 @@ the effect of low-sample classes on macro-F1, is in `report/model_report.md`.
 
 ---
 
-## 8. Demo Video & Deployed App
 
-- Demo video: **[link to be added]**
-- Deployed app: **[link to be added, if deployed]**
-
----
-
-## 9. Originality Declaration
+## 8. Originality Declaration
 
 This project uses the following third-party resources, all cited above and
 in code comments:
