@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriSmart AI</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark">A</span>
+      <span class="brand-name">AgriSmart<span class="brand-accent">AI</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">◈</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="detect">
+        <span class="nav-icon">◎</span> Disease Detection
+      </button>
+      <button class="nav-item" data-view="sustainability">
+        <span class="nav-icon">✦</span> Sustainability
+      </button>
+      <button class="nav-item" data-view="weather">
+        <span class="nav-icon">☁</span> Weather Advisory
+      </button>
+      <button class="nav-item" data-view="history">
+        <span class="nav-icon">▤</span> History
+      </button>
+      <button class="nav-item" data-view="map">
+        <span class="nav-icon">⚲</span> Field Map
+      </button>
+      <button class="nav-item" data-view="classes">
+        <span class="nav-icon">❋</span> Supported Crops
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="api-status" id="apiStatus">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Checking backend...</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <section class="view active" id="view-dashboard">
+      <div class="view-header">
+        <h1>Dashboard</h1>
+        <p class="view-subtitle">Live overview of every scan run through this instance.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card fade-in">
+          <div class="stat-label">Total Scans</div>
+          <div class="stat-value" id="statTotal">--</div>
+        </div>
+        <div class="stat-card stat-good fade-in">
+          <div class="stat-label">Healthy</div>
+          <div class="stat-value" id="statHealthy">--</div>
+        </div>
+        <div class="stat-card stat-warn fade-in">
+          <div class="stat-label">Diseased</div>
+          <div class="stat-value" id="statDiseased">--</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-label">Avg. Confidence</div>
+          <div class="stat-value" id="statConfidence">--</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-label">Avg. Sustainability</div>
+          <div class="stat-value" id="statSustainability">--</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-label">Scans This Week</div>
+          <div class="stat-value" id="statThisWeek">--</div>
+        </div>
+      </div>
+
+      <div class="dashboard-panels">
+        <div class="panel fade-in">
+          <h3>Top Detected Diseases</h3>
+          <canvas id="diseaseChart" height="220"></canvas>
+          <p class="hint" id="chartEmptyHint">No disease detections yet.</p>
+        </div>
+        <div class="panel fade-in">
+          <h3>Healthy vs Diseased</h3>
+          <canvas id="healthChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="dashboard-panels">
+        <div class="panel fade-in">
+          <h3>Confidence Trend</h3>
+          <p class="panel-subtitle">Model confidence across your most recent scans.</p>
+          <canvas id="confidenceTrendChart" height="220"></canvas>
+          <p class="hint" id="trendEmptyHint">Not enough scans yet to show a trend.</p>
+        </div>
+        <div class="panel fade-in">
+          <h3>Scans by Crop</h3>
+          <p class="panel-subtitle">Which crops you've been scanning most.</p>
+          <canvas id="cropBreakdownChart" height="220"></canvas>
+          <p class="hint" id="cropEmptyHint">No scans yet.</p>
+        </div>
+      </div>
+
+      <div class="panel fade-in">
+        <h3>Scan Activity <span class="panel-subtitle-inline">(last 14 days)</span></h3>
+        <canvas id="activityChart" height="140"></canvas>
+        <p class="hint" id="activityEmptyHint">No activity yet -- start scanning to populate this.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <h3>Recent Scans</h3>
+        <div class="recent-strip" id="recentStrip"></div>
+        <p class="hint" id="recentEmptyHint">No scans yet -- try the Disease Detection tab.</p>
+      </div>
+
+      <button class="btn btn-ghost" id="refreshDashboardBtn">Refresh Dashboard</button>
+    </section>
+
+    <section class="view" id="view-detect">
+      <div class="view-header">
+        <h1>Crop Disease Detection</h1>
+        <p class="view-subtitle">Upload a leaf photo, or drag it in. Optionally tag your location to build a field map over time.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <div class="upload-row">
+          <label class="upload-box" id="uploadBox">
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <span class="upload-icon">⇧</span>
+            <span id="uploadLabel">Click or drag a leaf image here</span>
+          </label>
+          <div class="preview-box" id="previewBox">
+            <img id="previewImg" alt="preview" hidden>
+          </div>
+        </div>
+
+        <div class="location-row">
+          <label class="location-toggle">
+            <input type="checkbox" id="attachLocationToggle">
+            Attach my current location to this scan
+          </label>
+          <span class="location-status" id="locationStatus"></span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="predictBtn" disabled>
+            <span id="predictBtnText">Analyze Leaf</span>
+            <span class="spinner" id="predictSpinner" hidden></span>
+          </button>
+          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="result-box" id="resultBox" hidden>
+          <div class="result-header">
+            <img id="resultImg" class="result-thumb" alt="analyzed leaf">
+            <div>
+              <h3 id="resultClass"></h3>
+              <div class="confidence-bar-track">
+                <div class="confidence-bar-fill" id="confidenceFill"></div>
+              </div>
+              <p id="confidenceText"></p>
+            </div>
+          </div>
+          <p class="precaution"><strong>Precaution:</strong> <span id="precautionText"></span></p>
+
+          <div class="topk" id="topkBox">
+            <h4>Other possibilities considered</h4>
+            <ul id="topkList"></ul>
+          </div>
+        </div>
+
+        <div class="error-box" id="predictError" hidden></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-sustainability">
+      <div class="view-header">
+        <h1>Sustainability Score <span class="badge">Bonus D</span></h1>
+        <p class="view-subtitle">Rule-based, reproducible score from soil moisture, crop health, and resource use.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <div class="form-grid">
+          <label>
+            Soil moisture (%)
+            <input type="number" id="soilMoisture" value="45" min="0" max="100">
+          </label>
+          <label>
+            Fertilizer / pesticide use
+            <select id="resourceLevel">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" id="sustainabilityHint">Run a disease detection first to auto-fill crop health -- or try it standalone with default "healthy" assumption.</p>
+
+        <button class="btn btn-secondary" id="scoreBtn">
+          <span id="scoreBtnText">Compute Sustainability Score</span>
+          <span class="spinner" id="scoreSpinner" hidden></span>
+        </button>
+
+        <div class="result-box" id="scoreResultBox" hidden>
+          <h3><span id="scoreValue"></span> <span class="score-max">/ 100</span></h3>
+          <ul class="breakdown-list" id="breakdownList"></ul>
+          <p class="formula" id="formulaText"></p>
+          <ul class="suggestions-list" id="suggestionsList"></ul>
+        </div>
+
+        <div class="error-box" id="scoreError" hidden></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-weather">
+      <div class="view-header">
+        <h1>Weather-Based Advisory <span class="badge">Bonus C</span></h1>
+        <p class="view-subtitle">Live forecast combined with disease-detection result into simple action guidance.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <div class="form-grid">
+          <label>
+            Latitude
+            <input type="number" id="latInput" value="23.03" step="0.01">
+          </label>
+          <label>
+            Longitude
+            <input type="number" id="lonInput" value="72.58" step="0.01">
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="locBtn" type="button">Use my current location</button>
+          <button class="btn btn-primary" id="weatherBtn">
+            <span id="weatherBtnText">Get Weather Advisory</span>
+            <span class="spinner" id="weatherSpinner" hidden></span>
+          </button>
+        </div>
+
+        <div class="result-box" id="weatherResultBox" hidden>
+          <p><strong>Rain probability today:</strong> <span id="rainToday"></span>%</p>
+          <p><strong>Rain probability tomorrow:</strong> <span id="rainTomorrow"></span>%</p>
+          <p><strong>Max temperature today:</strong> <span id="tempMax"></span>°C</p>
+          <ul class="suggestions-list" id="weatherActions"></ul>
+          <p class="source-note" id="weatherSource"></p>
+        </div>
+
+        <div class="error-box" id="weatherError" hidden></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-history">
+      <div class="view-header">
+        <h1>Prediction History</h1>
+        <p class="view-subtitle">Every scan ever made through this backend. Click a card for full detail.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <button class="btn btn-ghost" id="loadHistoryBtn">Load / Refresh History</button>
+        <div class="error-box" id="historyError" hidden></div>
+        <div class="hint" id="historyEmpty">No history loaded yet.</div>
+        <div class="history-grid" id="historyGrid"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-map">
+      <div class="view-header">
+        <h1>Field Map</h1>
+        <p class="view-subtitle">Every scan tagged with a location, plotted on a map. Click a pin for details.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <button class="btn btn-ghost" id="loadMapBtn">Load / Refresh Map</button>
+        <div class="error-box" id="mapError" hidden></div>
+        <div class="hint" id="mapEmpty">No location-tagged scans yet -- enable "Attach location" when analyzing a leaf.</div>
+        <div id="mapContainer" class="map-container" hidden></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-classes">
+      <div class="view-header">
+        <h1>Supported Crops &amp; Diseases</h1>
+        <p class="view-subtitle">Full list of classes this model was trained to recognize.</p>
+      </div>
+
+      <div class="panel fade-in">
+        <button class="btn btn-ghost" id="loadClassesBtn">Load Classes</button>
+        <div class="error-box" id="classesError" hidden></div>
+        <div class="classes-grid" id="classesGrid" hidden></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
