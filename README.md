@@ -112,8 +112,8 @@ Reproduction time: under 10 minutes if datasets are already downloaded and
 placed as described below.
 
 ```bash
-git clone <this-repo-url>
-cd agrismart-ai
+git clone https://github.com/mohammadanasshaikh-tech/agrismart.git
+cd agrismart
 python -m venv agrismart-env
 agrismart-env\Scripts\activate        # Windows
 # source agrismart-env/bin/activate   # Linux/Mac
@@ -216,8 +216,17 @@ the effect of low-sample classes on macro-F1, is in `report/model_report.md`.
 
 ---
 
+## 8. Demo Video & Deployed App
 
-## 8. Originality Declaration
+- **Demo Video (2 min)**: [Loom Link yaha daal]
+- **Live App**: https://agrismart.streamlit.app (agar deploy kiya hai)
+- **API Docs**: http://localhost:8000/docs (local)
+
+> Video me dikhana: leaf upload -> prediction -> weather advisory -> sustainability score
+
+---
+
+## 9. Originality Declaration
 
 This project uses the following third-party resources, all cited above and
 in code comments:
