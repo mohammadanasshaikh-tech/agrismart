@@ -229,3 +229,18 @@ in code comments:
   this hackathon, within the 10-15 September development window.
 - AI coding assistance (Claude) was used during development for code
   generation and debugging, per the rules permitting AI assistant use.
+
+---
+
+## 📹 Demo Video (SIH 2026)
+
+**File:** `docs/demo.mp4` (27.3 MB, Stored with Git LFS)
+
+**Watch:**
+- Download / Play Raw: https://github.com/mohammadanasshaikh-tech/agrismart/raw/main/docs/demo.mp4
+- GitHub Page: https://github.com/mohammadanasshaikh-tech/agrismart/blob/main/docs/demo.mp4
+
+**Demo Details (1:18):**
+- 0:23 - Crop Disease Detection - Tomato Septoria 100%
+- 0:34 - Sustainability Score 58/100
+- 0:39 - Weather Advisory 23.03, 72.56
